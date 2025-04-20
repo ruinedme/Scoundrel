@@ -2,7 +2,8 @@ const { createInterface } = require('readline');
 const TUI = require('./tui');
 const Deck = require('./deck');
 
-const deck = new Deck(Math.random() * (2 ** 32), ['JH', 'QH', 'KH', 'AH', 'JD', 'QD', 'KD', 'AD']);
+const seed = Math.random() * (2 ** 32) >>> 0;
+const deck = new Deck(seed, ['JH', 'QH', 'KH', 'AH', 'JD', 'QD', 'KD', 'AD']);
 const tui = new TUI();
 let life = 20;
 let fledLastRoom = false;
@@ -11,6 +12,7 @@ let weapon = [];
 let room = [];
 let discard = [];
 const cardRE = /^(\d{1,2}|[AJQK])([HDCS])$/;
+let err = undefined;
 
 const fillRoom = (hasFled = false) => {
     while (room.length < 4) {
@@ -123,7 +125,8 @@ tui.menu({
     room,
     fledLastRoom,
     discard,
-    weapon
+    weapon,
+    seed,
 });
 
 rl.on('line', (line) => {
@@ -134,14 +137,14 @@ rl.on('line', (line) => {
         case '4':
             const index = parseInt(line.trim(), 10);
             if (index > room.length) {
-                console.log('Invalid Choice');
+                err = 'Invalid Choice';
                 break;
             }
             playCard(index);
             break;
         case 'r':
             if (fledLastRoom) {
-                console.log('Can\'t flee from 2 rooms in a row.');
+                err = 'Can\'t flee from 2 rooms in a row.'
                 break;
             }
             fledLastRoom = true;
@@ -153,7 +156,7 @@ rl.on('line', (line) => {
             life = 0;
             rl.close();
         default:
-            console.log('Invalid choice');
+            err = 'Invalid Choice';
     }
     if (life <= 0 || (deck.remaining() === 0 && room.length === 0)) {
         rl.close();
@@ -167,8 +170,11 @@ rl.on('line', (line) => {
         room,
         fledLastRoom,
         discard,
-        weapon
+        weapon,
+        seed,
+        err
     });
+    err = undefined;
     rl.prompt();
 }).on('close', () => {
     tui.destroy();

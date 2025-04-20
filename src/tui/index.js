@@ -1,4 +1,4 @@
-const { VT100, SGR, DECSET } = require('@ruinedme/vt100');
+const { VT100, SGR, DECSET, CHARSET } = require('@ruinedme/vt100');
 
 /**
  * Text User Interface (TUI)
@@ -18,7 +18,7 @@ class TUI {
         this.#height = height
         this.#width = width;
         this.#vt100 = new VT100();
-        this.#vt100.DECSET(DECSET.USE_ALT_BUFFER);
+        this.#vt100.DECSET(DECSET.USE_ALT_BUFFER).CUP(25,80).write('@');
     }
 
     getHeight = () => this.#height;
@@ -26,9 +26,10 @@ class TUI {
 
     /**
      * 
-     * @param {{life: number, deck: Deck,room: string[], fledLastRoom: boolean, discard: string[],weapon: string[]}} gameState 
+     * @param {{life: number, deck: Deck,room: string[], fledLastRoom: boolean, discard: string[],weapon: string[], seed: number, err: string}} gameState 
      */
     menu(gameState) {
+        
         this.#vt100
             .SU(this.#height)
             .CUP(1, 1)
@@ -38,6 +39,11 @@ class TUI {
             .SGR([SGR.FOREGROUND_CYAN, SGR.BOLD])
             .write(`\tDECK: ${gameState.deck.remaining()}\tDISCARD: ${gameState.discard.length}`, true);
 
+        this.#vt100.CUP(2,0).CHARST(CHARSET.LINE);
+        for (let i = 0;i<this.#width;i++){
+            this.#vt100.append('o');
+        }
+        this.#vt100.CHARST(CHARSET.US_ASCII).write();
         for (let i = 0; i < gameState.room.length; i++) {
             this.#vt100
                 .CUP(3 + i, 0)
@@ -47,14 +53,14 @@ class TUI {
             const kind = card[card.length - 1];
             switch (kind) {
                 case 'H':
-                    this.#vt100.SGR([SGR.FOREGROUND_GREEN]);
+                    this.#vt100.SGR([SGR.FOREGROUND_GREEN]).append('(Heal) ');
                     break;
                 case 'D':
-                    this.#vt100.SGR([SGR.FOREGROUND_YELLOW]);
+                    this.#vt100.SGR([SGR.FOREGROUND_YELLOW]).append('(Equip) ');
                     break;
                 case 'S':
                 case 'C':
-                    this.#vt100.SGR([SGR.FOREGROUND_RED]);
+                    this.#vt100.SGR([SGR.FOREGROUND_RED]).append('(Fight) ');
                     break;
             }
             this.#vt100.write(`${gameState.room[i]}`, true);
@@ -73,12 +79,19 @@ class TUI {
             this.#vt100.write(`WEAPON: ${gameState.weapon[0]}`);
         }
 
-        this.#vt100.CUP(12, 0).write('q: QUIT\r\n', true);
-        this.#vt100.CUP(25, 0).write('CHOICE> ');
+        this.#vt100
+            .CUP(this.#height-2, 0)
+            .append(`q: QUIT`)
+            .CUP(this.#height-2, this.#width - 20)
+            .write(`SEED: ${gameState.seed}\r\n`,true);
+        if(gameState.err){
+            this.#vt100.CUP(this.#height-1,0).SGR([SGR.FOREGROUND_RED,SGR.BOLD]).write(`ERROR: ${gameState.err}`,true);
+        }
+        this.#vt100.CUP(this.#height, 0).write('CHOICE> ');
     }
 
     destroy() {
-        this.#vt100.DECRST(DECSET.USE_ALT_BUFFER);
+        this.#vt100.SU(this.#height).DECRST(DECSET.USE_ALT_BUFFER).write();
     }
 }
 
