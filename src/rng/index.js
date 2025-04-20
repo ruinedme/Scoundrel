@@ -5,7 +5,7 @@
  */
 const Mulberry32 = (seed) => {
     return () => {
-        seed = (seed + 0x9e3779b9) |0;
+        seed = (seed + 0x9e3779b9) | 0;
         let z = seed;
         z ^= z >>> 16;
         z = Math.imul(z, 0x21f0aaad);

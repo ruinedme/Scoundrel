@@ -2,7 +2,7 @@ const { createInterface } = require('readline');
 const TUI = require('./tui');
 const Deck = require('./deck');
 
-const deck = new Deck(Math.random() * (2**32), ['JH', 'QH', 'KH', 'AH', 'JD', 'QD', 'KD', 'AD']);
+const deck = new Deck(Math.random() * (2 ** 32), ['JH', 'QH', 'KH', 'AH', 'JD', 'QD', 'KD', 'AD']);
 const tui = new TUI();
 let life = 20;
 let fledLastRoom = false;
@@ -11,17 +11,6 @@ let weapon = [];
 let room = [];
 let discard = [];
 const cardRE = /^(\d{1,2}|[AJQK])([HDCS])$/;
-
-const menu = () => {
-    for (let i = 0; i < room.length; i++) {
-        console.log(`${i + 1}: ${room[i]}`);
-    }
-    if (!fledLastRoom && room.length === 4) {
-        console.log('r: Run');
-    }
-    console.log('q: Quit');
-    console.log('weapon: ', weapon, `, life: ${life}, deck: ${deck.remaining()}, discard: ${discard.length}`);
-};
 
 const fillRoom = (hasFled = false) => {
     while (room.length < 4) {
@@ -32,17 +21,17 @@ const fillRoom = (hasFled = false) => {
 };
 
 const score = () => {
-    if (life <= 0){
+    if (life <= 0) {
         life = 0;
-        while(deck.remaining() > 0){
+        while (deck.remaining() > 0) {
             let card = deck.draw();
-            if (/[CS]$/.test(card)){
+            if (/[CS]$/.test(card)) {
                 life -= 1;
             }
         }
-    } else if(life === 20 && discard.length > 0){
-        let last = discard[discard.length-1];
-        if (last.endsWith('H')){
+    } else if (life === 20 && discard.length > 0) {
+        let last = discard[discard.length - 1];
+        if (last.endsWith('H')) {
             let value = parseInt(cardRE.exec(last)[1]);
             life += value;
         }
@@ -70,7 +59,7 @@ const playCard = (index) => {
             value = 13;
             break;
         default:
-            value = parseInt(value,10);
+            value = parseInt(value, 10);
     }
     switch (kind) {
         case 'D':
@@ -166,7 +155,7 @@ rl.on('line', (line) => {
         default:
             console.log('Invalid choice');
     }
-    if (life <= 0 || (deck.remaining() === 0 && room.length === 0)){
+    if (life <= 0 || (deck.remaining() === 0 && room.length === 0)) {
         rl.close();
     }
     if (room.length === 1) {
