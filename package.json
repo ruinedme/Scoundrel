@@ -1,0 +1,15 @@
+{
+  "name": "scoundrel",
+  "version": "1.0.0",
+  "description": "Implementation of the game Scoundrel in NodeJS. https://thesoloboardgamer.com/scoundrel-dungeon-crawl/",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ruinedme",
+  "license": "ISC",
+  "dependencies": {
+    "@ruinedme/vt100": "github:ruinedme/VT100#main",
+    "scoundrel": "file:"
+  }
+}
